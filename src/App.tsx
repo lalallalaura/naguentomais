@@ -18,6 +18,7 @@ export default function App() {
   const [result, setResult] = useState<RecommendationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [playlistState, setPlaylistState] = useState<
+  
     { status: "idle" } | { status: "saving" } | { status: "done"; url: string | null } | { status: "error"; message: string }
   >({ status: "idle" });
 

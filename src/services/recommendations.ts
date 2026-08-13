@@ -7,11 +7,10 @@ function distance(a: number, b: number) {
   return Math.abs(a - b);
 }
 
-
-function recommendFromLocalData(moodId: MoodId): { songs: Song[]; score: number } {
+function recommendFromLocalData(moodId: MoodId, page: number = 0): { songs: Song[]; score: number } {
   const mood = moods.find((item) => item.id === moodId)!;
 
-  const ranked = songs
+  const rankedAll = songs
     .map((song) => {
       const moodBonus = song.moods.includes(moodId) ? 0.35 : 0;
       const energyFit = 1 - distance(song.energy, mood.energy);
@@ -22,9 +21,11 @@ function recommendFromLocalData(moodId: MoodId): { songs: Song[]; score: number 
       const score = moodBonus + energyFit * 0.3 + valenceFit * 0.25 + bpmFit * 0.1;
       return { song, score };
     })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 12)
-    .map((item) => item.song);
+    .sort((a, b) => b.score - a.score);
+
+  const pageSize = 12;
+  const startIndex = (page * pageSize) % Math.max(rankedAll.length - pageSize + 1, 1);
+  const ranked = rankedAll.slice(startIndex, startIndex + pageSize).map((item) => item.song);
 
   const avgFit =
     ranked.reduce((total, song) => {
@@ -42,21 +43,21 @@ export interface RecommendationResult {
   notice?: string;
 }
 
-export async function recommendSongs(moodId: MoodId): Promise<RecommendationResult> {
+export async function recommendSongs(moodId: MoodId, page: number = 0): Promise<RecommendationResult> {
   if (!isSpotifyConnected()) {
     return {
-      ...recommendFromLocalData(moodId),
+      ...recommendFromLocalData(moodId, page),
       source: "local",
       notice: "Conecte seu Spotify no Perfil para receber recomendações com músicas reais!",
     };
   }
 
   try {
-    const result = await recommendSongsFromSpotify(moodId);
+    const result = await recommendSongsFromSpotify(moodId, page);
     return { ...result, source: "spotify" };
   } catch (err: any) {
     return {
-      ...recommendFromLocalData(moodId),
+      ...recommendFromLocalData(moodId, page),
       source: "local",
       notice: err?.message ?? "Não conseguimos buscar músicas no Spotify agora. Mostrando sugestões locais.",
     };
