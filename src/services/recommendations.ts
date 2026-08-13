@@ -23,7 +23,7 @@ function recommendFromLocalData(moodId: MoodId): { songs: Song[]; score: number 
       return { song, score };
     })
     .sort((a, b) => b.score - a.score)
-    .slice(0, 12)
+    .slice(0, 15)
     .map((item) => item.song);
 
   const avgFit =
