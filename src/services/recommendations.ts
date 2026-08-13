@@ -7,9 +7,7 @@ function distance(a: number, b: number) {
   return Math.abs(a - b);
 }
 
-// Fallback local: mesma lógica que o Harmoody já usava, mantida apenas
-// como rede de segurança para quando o Spotify não está conectado ou a
-// busca falha — o app não deve depender dela em uso normal.
+
 function recommendFromLocalData(moodId: MoodId): { songs: Song[]; score: number } {
   const mood = moods.find((item) => item.id === moodId)!;
 
@@ -49,7 +47,7 @@ export async function recommendSongs(moodId: MoodId): Promise<RecommendationResu
     return {
       ...recommendFromLocalData(moodId),
       source: "local",
-      notice: "Conecte seu Spotify no Perfil para receber recomendações com músicas reais.",
+      notice: "Conecte seu Spotify no Perfil para receber recomendações com músicas reais!",
     };
   }
 

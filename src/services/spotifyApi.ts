@@ -128,7 +128,7 @@ export async function fetchUserTopTracks(limit = 10): Promise<SpotifyTrack[]> {
 
 /**
  * Busca músicas salvas na biblioteca do usuário.
- * Requer o escopo "user-library-read".
+
  */
 export async function fetchUserSavedTracks(limit = 10): Promise<SpotifyTrack[]> {
   const safeLimit = Math.min(limit, 10);
@@ -191,13 +191,7 @@ export async function fetchArtistsGenres(
   return result;
 }
 
-/**
- * Cria uma playlist privada nova para o usuário conectado.
- * Desde fev/2026 o endpoint é POST /me/playlists (o antigo
- * POST /users/{id}/playlists foi removido, e com ele a necessidade de
- * buscar o id do usuário antes de criar a playlist).
- * Requer o escopo "playlist-modify-private".
- */
+
 export async function createPlaylist(
   name: string,
   description: string
@@ -209,11 +203,6 @@ export async function createPlaylist(
   return { id: data.id, url: data.external_urls?.spotify ?? null };
 }
 
-/**
- * Adiciona faixas (por id de faixa) a uma playlist já criada.
- * Desde fev/2026 o endpoint é POST /playlists/{id}/items (o antigo
- * POST /playlists/{id}/tracks foi removido).
- */
 export async function addTracksToPlaylist(
   playlistId: string,
   trackIds: string[]
