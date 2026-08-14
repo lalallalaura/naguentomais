@@ -128,7 +128,6 @@ export async function fetchUserTopTracks(limit = 10): Promise<SpotifyTrack[]> {
 
 /**
  * Busca músicas salvas na biblioteca do usuário.
-
  */
 export async function fetchUserSavedTracks(limit = 10): Promise<SpotifyTrack[]> {
   const safeLimit = Math.min(limit, 10);
@@ -151,12 +150,13 @@ export async function fetchUserSavedTracks(limit = 10): Promise<SpotifyTrack[]> 
  * Desde fev/2026 o Spotify reduziu o limite máximo do /search de 50
  * para 10 por chamada — por isso o valor é sempre limitado aqui.
  */
-export async function searchTracks(query: string, limit = 10): Promise<SpotifyTrack[]> {
+export async function searchTracks(query: string, limit = 10, offset = 0): Promise<SpotifyTrack[]> {
   const safeLimit = Math.min(limit, 10);
   const params = new URLSearchParams({
     q: query,
     type: "track",
     limit: String(safeLimit),
+    offset: String(offset),
   });
   const data = await spotifyFetch(`/search?${params.toString()}`);
   const items = data.tracks?.items ?? [];
@@ -190,7 +190,6 @@ export async function fetchArtistsGenres(
   });
   return result;
 }
-
 
 export async function createPlaylist(
   name: string,

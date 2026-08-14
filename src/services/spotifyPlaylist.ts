@@ -1,5 +1,6 @@
 import { Mood, Song } from "../types";
 import { createPlaylist, addTracksToPlaylist, SpotifyApiError } from "./spotifyApi";
+import { recommendSongsFromSpotify } from "./spotifyRecommendations";
 
 export interface CreatedPlaylist {
   url: string | null;
@@ -7,20 +8,26 @@ export interface CreatedPlaylist {
 }
 
 /**
- * Cria uma playlist privada no Spotify do usuário com as músicas
- * recomendadas pelo Harmoody para o humor selecionado.
+ * Cria uma playlist privada no Spotify do usuário com músicas
+ * recomendadas para o humor selecionado.
  *
- * Desde fev/2026 a criação usa POST /me/playlists (não precisa mais
- * buscar o id do usuário antes).
- *
- * Só funciona com faixas reais do Spotify (song.id precisa ser um id de
- * faixa válido) — não use com o fallback local.
+ * `size` permite pedir mais faixas do que as ~12 exibidas na tela (ex:
+ * 24 ou 36) — nesse caso busca um lote maior diretamente do Spotify,
+ * independente do que está sendo mostrado no momento no app.
  */
 export async function createPlaylistFromRecommendations(
   mood: Mood,
-  songs: Song[]
+  songs: Song[],
+  size: number = songs.length
 ): Promise<CreatedPlaylist> {
-  if (songs.length === 0) {
+  let tracksForPlaylist = songs;
+
+  if (size !== songs.length) {
+    const bigger = await recommendSongsFromSpotify(mood.id, { count: size });
+    tracksForPlaylist = bigger.songs;
+  }
+
+  if (tracksForPlaylist.length === 0) {
     throw new SpotifyApiError("no-tracks", "Não há músicas para adicionar à playlist.");
   }
 
@@ -31,9 +38,8 @@ export async function createPlaylistFromRecommendations(
   const playlist = await createPlaylist(name, description);
 
   try {
-    await addTracksToPlaylist(playlist.id, songs.map((s) => s.id));
+    await addTracksToPlaylist(playlist.id, tracksForPlaylist.map((s) => s.id));
   } catch (err) {
-    // A playlist já foi criada; melhor avisar isso do que dizer que falhou tudo.
     if (err instanceof SpotifyApiError) {
       throw new SpotifyApiError(
         err.code,
@@ -43,5 +49,5 @@ export async function createPlaylistFromRecommendations(
     throw err;
   }
 
-  return { url: playlist.url, trackCount: songs.length };
+  return { url: playlist.url, trackCount: tracksForPlaylist.length };
 }
