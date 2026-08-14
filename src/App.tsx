@@ -11,6 +11,12 @@ import { createPlaylistFromRecommendations } from "./services/spotifyPlaylist";
 import { getHistory, HistoryItem, saveHistory } from "./services/history";
 import { MoodId } from "./types";
 
+type PlaylistState =
+  | { status: "idle" }
+  | { status: "saving" }
+  | { status: "done"; url: string | null }
+  | { status: "error"; message: string };
+
 export default function App() {
   const [selectedMood, setSelectedMood] = useState<MoodId | null>(null);
   const [activeTab, setActiveTab] = useState("home");
@@ -20,9 +26,7 @@ export default function App() {
   const [moreLoading, setMoreLoading] = useState(false);
   const [shownIds, setShownIds] = useState<string[]>([]);
   const [playlistSize, setPlaylistSize] = useState(12);
-  const [playlistState, setPlaylistState] = useState
-  { status: "idle" } | { status: "saving" } | { status: "done"; url: string | null } | { status: "error"; message: string }
-    > ({ status: "idle" });
+  const [playlistState, setPlaylistState] = useState<PlaylistState>({ status: "idle" });
 
   useEffect(() => {
     if (!selectedMood) {
